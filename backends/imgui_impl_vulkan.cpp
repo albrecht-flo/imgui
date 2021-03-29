@@ -1711,30 +1711,32 @@ ImTextureID ImGui_ImplVulkan_AddTexture(VkSampler sampler, VkImageView image_vie
     ImGui_ImplVulkan_InitInfo* v = &bd->VulkanInitInfo;
     VkDescriptorSet descriptor_set;
     // Create Descriptor Set:
-    {
-        VkDescriptorSetAllocateInfo alloc_info = {};
-        alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        alloc_info.descriptorPool = v->DescriptorPool;
-        alloc_info.descriptorSetCount = 1;
-        alloc_info.pSetLayouts = &bd->DescriptorSetLayout;
-        err = vkAllocateDescriptorSets(v->Device, &alloc_info, &descriptor_set);
-        check_vk_result(err);
-    }
+    VkDescriptorSetAllocateInfo alloc_info = {};
+    alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    alloc_info.descriptorPool = v->DescriptorPool;
+    alloc_info.descriptorSetCount = 1;
+    alloc_info.pSetLayouts = &bd->DescriptorSetLayout;
+    err = vkAllocateDescriptorSets(v->Device, &alloc_info, &descriptor_set);
+    check_vk_result(err);
+    // Update the Descriptor Set
+    ImGui_ImplVulkan_UpdateTexture(descriptor_set, sampler, image_view, image_layout);
 
-    // Update the Descriptor Set:
-    {
-        VkDescriptorImageInfo desc_image[1] = {};
-        desc_image[0].sampler = sampler;
-        desc_image[0].imageView = image_view;
-        desc_image[0].imageLayout = image_layout;
-        VkWriteDescriptorSet write_desc[1] = {};
-        write_desc[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        write_desc[0].dstSet = descriptor_set;
-        write_desc[0].descriptorCount = 1;
-        write_desc[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        write_desc[0].pImageInfo = desc_image;
-        vkUpdateDescriptorSets(v->Device, 1, write_desc, 0, NULL);
-    }
+    return (ImTextureID)descriptor_set;
+}
 
+ImTextureID ImGui_ImplVulkan_UpdateTexture(VkDescriptorSet descriptor_set, VkSampler sampler, VkImageView image_view, VkImageLayout image_layout)
+{
+    ImGui_ImplVulkan_InitInfo* v = &g_VulkanInitInfo;
+    VkDescriptorImageInfo desc_image[1] = {};
+    desc_image[0].sampler = sampler;
+    desc_image[0].imageView = image_view;
+    desc_image[0].imageLayout = image_layout;
+    VkWriteDescriptorSet write_desc[1] = {};
+    write_desc[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    write_desc[0].dstSet = descriptor_set;
+    write_desc[0].descriptorCount = 1;
+    write_desc[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    write_desc[0].pImageInfo = desc_image;
+    vkUpdateDescriptorSets(v->Device, 1, write_desc, 0, NULL);
     return (ImTextureID)descriptor_set;
 }
