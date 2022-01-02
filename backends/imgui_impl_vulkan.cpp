@@ -563,7 +563,7 @@ void ImGui_ImplVulkan_RenderDrawData(ImDrawData* draw_data, VkCommandBuffer comm
 
                 // Bind DescriptorSet (font or user texture)
                     VkDescriptorSet desc_set[1] = { (VkDescriptorSet)pcmd->TextureId };
-                    vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_PipelineLayout, 0, 1, desc_set, 0, NULL);
+                    vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, bd->PipelineLayout, 0, 1, desc_set, 0, NULL);
                     // Draw
                 vkCmdDrawIndexed(command_buffer, pcmd->ElemCount, 1, pcmd->IdxOffset + global_idx_offset, pcmd->VtxOffset + global_vtx_offset, 0);
             }
@@ -1705,8 +1705,8 @@ void ImGui_ImplVulkan_ShutdownPlatformInterface()
 // Source: https://github.com/martty/imgui/blob/master/examples/imgui_impl_vulkan.cpp; MIT Licensed
 ImTextureID ImGui_ImplVulkan_AddTexture(VkSampler sampler, VkImageView image_view, VkImageLayout image_layout)
 {
-    VkResult err;
     ImGui_ImplVulkan_Data* bd = ImGui_ImplVulkan_GetBackendData();
+    VkResult err;
 
     ImGui_ImplVulkan_InitInfo* v = &bd->VulkanInitInfo;
     VkDescriptorSet descriptor_set;
@@ -1726,7 +1726,9 @@ ImTextureID ImGui_ImplVulkan_AddTexture(VkSampler sampler, VkImageView image_vie
 
 ImTextureID ImGui_ImplVulkan_UpdateTexture(VkDescriptorSet descriptor_set, VkSampler sampler, VkImageView image_view, VkImageLayout image_layout)
 {
-    ImGui_ImplVulkan_InitInfo* v = &g_VulkanInitInfo;
+    ImGui_ImplVulkan_Data* bd = ImGui_ImplVulkan_GetBackendData();
+
+    ImGui_ImplVulkan_InitInfo* v = &bd->VulkanInitInfo;
     VkDescriptorImageInfo desc_image[1] = {};
     desc_image[0].sampler = sampler;
     desc_image[0].imageView = image_view;
